@@ -1,8 +1,9 @@
-const express = require("express");
-const helmet = require("helmet");
-const cors = require("cors");
+const express = require('express');
+const helmet = require('helmet');
+const cors = require('cors');
+const bcrypt = require('bcryptjs');
 
-const usersRouter = require("../users/users-router.js");
+const usersRouter = require('../users/users-router.js');
 
 const server = express();
 
@@ -10,10 +11,27 @@ server.use(helmet());
 server.use(express.json());
 server.use(cors());
 
-server.use("/api/users", usersRouter);
+server.use('/api/users', usersRouter);
 
-server.get("/", (req, res) => {
-  res.json({ api: "up" });
+server.get('/', (req, res) => {
+  res.json({ api: 'up' });
 });
+
+server.get('/hash', (req, res) => {
+  const password = req.headers.authorization;
+  const secret = req.headers.secret;
+  const hash = hashString(secret);
+
+  if (password === 'melon') {
+    res.json({ welcome: 'friend', secret, hash });
+  } else {
+    res.status(401).json({ you: 'cannot pass!' });
+  }
+});
+
+function hashString(str) {
+  const hash = bcrypt.hashSync(str, 12);
+  return hash;
+}
 
 module.exports = server;
