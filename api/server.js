@@ -30,7 +30,10 @@ server.get('/hash', (req, res) => {
 });
 
 function hashString(str) {
-  const hash = bcrypt.hashSync(str, 12);
+  //use bcryptjs to hash the str argument and return the hash
+  const rounds = process.env.HASH_ROUNDS || 4;
+  const hash = bcrypt.hashSync(str, rounds);
+
   return hash;
 }
 
