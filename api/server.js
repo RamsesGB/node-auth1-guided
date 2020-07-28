@@ -2,12 +2,35 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const session = require('express-session');
+const KnexSessionStore = require('connect-session-knex')(session);
 
 const usersRouter = require('../users/users-router.js');
 const authRouter = require('../auth/auth-router.js');
+const dbConnection = require('../database/connection.js');
 
 const server = express();
 
+const sessionConfiguration = {
+  name: 'monster',
+  secret: process.env.SESSION_SECRET || 'shhh keep it safe!',
+  cookie: {
+    maxAge: 1000 * 60 * 10,
+    secure: process.env.USE_SECURE_COOKIES || false, // you send the cookie only over https (secure connections)
+    httpOnly: true, //prevents JS code on the client from accessing this cookie
+  },
+  resave: false,
+  saveUninitialzed: true, //related to GDPR compliance only leave true in development.
+  store: new KnexSessionStore({
+    knex: dbConnection,
+    tablename: 'sessions',
+    sidfilename: 'sid',
+    createtable: true,
+    clearInterval: 1000 * 60 * 30, // time to check and remove expired sessions from the DB
+  }),
+};
+
+server.use(session(sessionConfiguration)); //enables session support
 server.use(helmet());
 server.use(express.json());
 server.use(cors());

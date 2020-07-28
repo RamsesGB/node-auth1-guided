@@ -28,6 +28,12 @@ router.post('/login', (req, res) => {
       const user = users[0];
 
       if (user && bycrpt.compareSync(password, user.password)) {
+        // store session to the DB
+        // produce a cookie and store the session ID inside the cookie
+        // send back the cookie with the session ID to the client
+        req.session.loggedIn = true;
+        req.session.username = user.username;
+
         res.status(200).json({ message: 'welcome!' });
       } else {
         res.status(401).json({ message: 'Invalid credentials' });
